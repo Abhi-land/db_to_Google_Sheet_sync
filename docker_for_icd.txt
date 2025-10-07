@@ -1,0 +1,181 @@
+Perfect — setting up a CI/CD pipeline with Docker and GitHub is one of the most powerful ways to automate deployment for your web apps (whether PHP, MERN, Flutter web, etc.). Let’s go step-by-step, including all commands and configuration files you’ll need.
+
+🚀 GOAL
+
+We’ll:
+
+Containerize your app using Docker
+
+Push the image to Docker Hub automatically
+
+Deploy using GitHub Actions (CI/CD)
+
+🧩 Step 1: Prepare Your Project
+
+Make sure your project has a standard structure like:
+
+my-app/
+├── src/
+├── Dockerfile
+├── docker-compose.yml  (optional)
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+├── package.json / composer.json / etc.
+└── README.md
+
+🐳 Step 2: Create a Dockerfile
+
+Example (for a PHP app):
+
+# Use Apache with PHP
+FROM php:8.2-apache
+
+# Copy your app into the container
+COPY . /var/www/html/
+
+# Set working directory
+WORKDIR /var/www/html/
+
+# Install dependencies if needed
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# Expose port
+EXPOSE 80
+
+# Start Apache
+CMD ["apache2-foreground"]
+
+
+Example (for a Node/MERN app):
+
+FROM node:18
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+CMD ["npm", "start"]
+
+🧱 Step 3: Test Locally
+
+Build and run:
+
+docker build -t my-app .
+docker run -p 8080:80 my-app
+
+
+Check at http://localhost:8080
+
+🧑‍💻 Step 4: Create a Docker Hub Account
+
+Go to https://hub.docker.com
+
+Create a repository (e.g., yourusername/my-app)
+
+Then log in via terminal:
+
+docker login
+
+⚙️ Step 5: Create GitHub Actions Workflow
+
+Create file: .github/workflows/ci-cd.yml
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: yourusername/my-app:latest
+
+      - name: Deploy to Server (optional)
+        if: github.ref == 'refs/heads/main'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull yourusername/my-app:latest
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d -p 80:80 --name my-app yourusername/my-app:latest
+
+🔑 Step 6: Add GitHub Secrets
+
+In your GitHub repo → Settings → Secrets and variables → Actions → Add:
+
+Secret Name	Description
+DOCKER_USERNAME	Your Docker Hub username
+DOCKER_PASSWORD	Your Docker Hub password/token
+SERVER_HOST	Your deployment server IP
+SERVER_USER	SSH username
+SERVER_SSH_KEY	Private SSH key for your server (copy content of your .pem or private key file)
+🧠 Step 7: Deploy Automatically
+
+Now when you:
+
+Push code to main branch
+→ GitHub will:
+
+Build Docker image
+
+Push to Docker Hub
+
+SSH into your server
+
+Pull & run the new container
+
+🧰 Optional: Using docker-compose on server
+
+If you prefer docker-compose, replace deploy script with:
+
+docker-compose pull
+docker-compose up -d --build
+
+🧩 Bonus: For Testing (CI only)
+
+You can also add steps to run unit tests before building:
+
+      - name: Run tests
+        run: |
+          npm test
+
+
+or
+
+      - name: Run PHP Unit tests
+        run: |
+          vendor/bin/phpunit
+
+

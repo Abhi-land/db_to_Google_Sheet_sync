@@ -1,0 +1,9 @@
+after installed git***************
+git config --global user.name "Abhishek_ilhare"
+git config --global user.email "abhishekilhare6262@gmail.com"
+To cheak name and email are set propperlly or not***************
+git config --list
+
+Go to your project folder:*********
+git init
+
