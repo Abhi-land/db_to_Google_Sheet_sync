@@ -6,4 +6,18 @@ git config --list
 
 Go to your project folder:*********
 git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/Abhi-land/Google_Sheet.git
+
+verify connection ******************
+git remote -v
+
+upload on github ***************
+git branch -M main
+git push -u origin main
+
+**** if you get ref error because of the readme file and git file on github simpaly pull and push after it will merge all the file locally the push**************
+git pull origin main --allow-unrelated-histories
+git push -u origin main
 
