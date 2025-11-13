@@ -9,8 +9,8 @@ git init
 git add .
 git commit -m "Initial commit"
 git remote add origin https://github.com/Abhi-land/Google_Sheet.git
-
-verify connection ******************
+gi
+verify connection ******************	
 git remote -v
 
 upload on github ***************
@@ -21,3 +21,65 @@ git push -u origin main
 git pull origin main --allow-unrelated-histories
 git push -u origin main
 
+git status
+***if you see this error =  (use "git commit" to conclude merge) ***********
+git commit -m "Merge completed: synced local and remote main branches"
+the push your repo to git hub
+git push -u origin main
+
+
+********************************************
+********************************************
+                DOKER SETUP
+********************************************
+********************************************
+docker --version
+docker info
+
+Create .dockerignore
+*****
+node_modules
+vendor
+.git
+.DS_Store
+.env
+npm-debug.log
+composer.lock
+*****
+
+Start Create a Dockerfile ****************
+
+# Use official PHP + Apache
+FROM php:8.1-apache
+
+# Install system deps and PHP extensions
+RUN apt-get update && apt-get install -y \
+    git unzip libzip-dev libpng-dev zlib1g-dev libicu-dev \
+    && docker-php-ext-install pdo_mysql zip intl mbstring gd \
+    && a2enmod rewrite \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install composer by copying from the composer image
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copy project files
+COPY . /var/www/html
+
+# Run composer (adjust flags for dev or prod)
+RUN composer install --no-interaction --prefer-dist --no-dev || true
+
+# Ensure writable folder (CodeIgniter uses writable/)
+RUN chown -R www-data:www-data /var/www/html/writable || true
+RUN chmod -R 755 /var/www/html/writable || true
+
+EXPOSE 80
+CMD ["apache2-foreground"]
+
+End Create a Dockerfile ****************
+
+Build the Docker image (local test)If your Dockerfile is already inside your project root folder (C:\xampp\htdocs\GOOGLE_SHEET), then you don’t need to give the full path in the docker build command.
+docker build -t abhishekilhare/google_sheet:local "C:\xampp\htdocs\GOOGLE_SHEET"
+or
+docker build -t abhishekilhare/google_sheet:local .
